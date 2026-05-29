@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentGuard | AI Attrition Prediction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Cursor Glow -->
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- Particle Canvas -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <span>Talent<span class="logo-accent">Guard</span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#hero" class="nav-link">Overview</a></li>
+            <li><a href="#architecture" class="nav-link">Architecture</a></li>
+            <li><a href="#models" class="nav-link">Models</a></li>
+            <li><a href="#results" class="nav-link">Results</a></li>
+            <li><a href="prediction.html" class="btn-nav"><span>Try Prediction</span><i class="fas fa-arrow-right"></i></a></li>
+        </ul>
+        <div class="mobile-toggle" id="mobileToggle">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="hero">
+    <div class="hero-noise"></div>
+    <div class="container hero-container">
+        <div class="hero-content" data-reveal>
+            <div class="badge">
+                <span class="badge-dot"></span>
+                Next-Gen HR Analytics
+            </div>
+            <h1>Predicting Employee<br>Attrition with <span class="gradient-text">Temporal<br>Intelligence</span></h1>
+            <p class="lead">An advanced workforce analytics system leveraging <strong>GRU</strong> and <strong>FT-Transformer</strong> architectures to identify attrition risks before they happen.</p>
+            <div class="hero-actions">
+                <a href="prediction.html" class="btn btn-primary">
+                    <span>Run Prediction</span>
+                    <div class="btn-glow"></div>
+                </a>
+                <a href="#architecture" class="btn btn-ghost">
+                    <i class="fas fa-layer-group"></i>
+                    <span>View Architecture</span>
+                </a>
+            </div>
+            <div class="trust-metrics">
+                <div class="metric">
+                    <span class="num" data-count="95">0</span><span class="num-suffix">%</span>
+                    <span class="label">Accuracy</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="num-text">GRU + FT</span>
+                    <span class="label">Hybrid Model</span>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric">
+                    <span class="num-text">Real-Time</span>
+                    <span class="label">Analysis</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual" data-reveal-delay="200">
+            <div class="visual-orb orb-1"></div>
+            <div class="visual-orb orb-2"></div>
+            <div class="main-card glass-card" style="animation: floatCard 6s ease-in-out infinite;">
+                <div class="card-chrome">
+                    <span class="chrome-dot red"></span>
+                    <span class="chrome-dot yellow"></span>
+                    <span class="chrome-dot green"></span>
+                    <span class="chrome-title">attrition_analysis.py</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <div class="chart-bars">
+                            <div class="cbar" style="--h:40%;--delay:0s"></div>
+                            <div class="cbar" style="--h:60%;--delay:0.1s"></div>
+                            <div class="cbar" style="--h:35%;--delay:0.2s"></div>
+                            <div class="cbar" style="--h:80%;--delay:0.3s"></div>
+                            <div class="cbar highlight" style="--h:92%;--delay:0.4s"></div>
+                        </div>
+                        <div class="chart-labels">
+                            <span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span><span>Now</span>
+                        </div>
+                    </div>
+                    <div class="alert-tag">
+                        <div class="alert-pulse"></div>
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>High Risk Detected — 87.4%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="float-chip chip-1 glass-card" style="animation: floatCard 7s ease-in-out infinite 1s;">
+                <div class="chip-icon teal"><i class="fas fa-brain"></i></div>
+                <div>
+                    <strong>FT-Transformer</strong>
+                    <span>Processing features...</span>
+                </div>
+                <div class="chip-status active"></div>
+            </div>
+
+            <div class="float-chip chip-2 glass-card" style="animation: floatCard 8s ease-in-out infinite 0.5s;">
+                <div class="chip-icon purple"><i class="fas fa-wave-square"></i></div>
+                <div>
+                    <strong>Temporal GRU</strong>
+                    <span>Analyzing trends</span>
+                </div>
+                <div class="chip-status active"></div>
+            </div>
+
+            <div class="float-chip chip-3 glass-card" style="animation: floatCard 6.5s ease-in-out infinite 1.5s;">
+                <div class="accuracy-ring">
+                    <svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="#1e293b" stroke-width="3"/><circle cx="18" cy="18" r="15.9" fill="none" stroke="#6366f1" stroke-width="3" stroke-dasharray="95 100" stroke-dashoffset="25" stroke-linecap="round"/></svg>
+                    <span>95%</span>
+                </div>
+                <span class="chip-label">Accuracy</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-hint">
+        <div class="scroll-line"></div>
+        <span>Scroll to explore</span>
+    </div>
+</section>
+
+<!-- Comparison Section -->
+<section class="section comparison-section" id="comparison">
+    <div class="container">
+        <div class="section-header" data-reveal>
+            <div class="section-eyebrow">The Problem</div>
+            <h2>Traditional Methods <span class="gradient-text">Fall Short</span></h2>
+            <p>Static snapshots can't capture the evolving nature of employee behavior.</p>
+        </div>
+        <div class="comparison-grid" data-reveal>
+            <div class="comp-card traditional">
+                <div class="comp-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="comp-tag">Legacy Approach</div>
+                <h3>Traditional HR Analytics</h3>
+                <ul>
+                    <li><span class="x-mark"><i class="fas fa-times"></i></span> Static data snapshots</li>
+                    <li><span class="x-mark"><i class="fas fa-times"></i></span> Ignores temporal patterns</li>
+                    <li><span class="x-mark"><i class="fas fa-times"></i></span> Reactive (post-resignation)</li>
+                    <li><span class="x-mark"><i class="fas fa-times"></i></span> Low predictive accuracy</li>
+                </ul>
+            </div>
+            <div class="comp-vs">VS</div>
+            <div class="comp-card modern">
+                <div class="comp-icon glow"><i class="fas fa-robot"></i></div>
+                <div class="comp-tag modern-tag">AI-Powered</div>
+                <h3>TalentGuard Intelligence</h3>
+                <ul>
+                    <li><span class="check-mark"><i class="fas fa-check"></i></span> Time-series behavioral modeling</li>
+                    <li><span class="check-mark"><i class="fas fa-check"></i></span> Attention-based feature learning</li>
+                    <li><span class="check-mark"><i class="fas fa-check"></i></span> Proactive risk identification</li>
+                    <li><span class="check-mark"><i class="fas fa-check"></i></span> 95%+ Prediction Accuracy</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture Section -->
+<section class="section architecture-section" id="architecture">
+    <div class="container">
+        <div class="section-header" data-reveal>
+            <div class="section-eyebrow">System Design</div>
+            <h2>Architecture <span class="gradient-text">Overview</span></h2>
+            <p>From raw HR data to actionable risk insights — end to end.</p>
+        </div>
+        <div class="arch-flow" data-reveal>
+            <div class="arch-step" data-step="1">
+                <div class="step-icon"><i class="fas fa-database"></i></div>
+                <div class="step-num">01</div>
+                <h4>Data Ingestion</h4>
+                <p>Historical & Temporal HR Records</p>
+            </div>
+            <div class="arch-arrow"><i class="fas fa-chevron-right"></i></div>
+            <div class="arch-step" data-step="2">
+                <div class="step-icon"><i class="fas fa-sliders-h"></i></div>
+                <div class="step-num">02</div>
+                <h4>Preprocessing</h4>
+                <p>Sequence Generation & Scaling</p>
+            </div>
+            <div class="arch-arrow"><i class="fas fa-chevron-right"></i></div>
+            <div class="arch-step active" data-step="3">
+                <div class="step-icon"><i class="fas fa-microchip"></i></div>
+                <div class="step-num">03</div>
+                <h4>Deep Learning Core</h4>
+                <p>GRU + FT-Transformer Ensemble</p>
+            </div>
+            <div class="arch-arrow"><i class="fas fa-chevron-right"></i></div>
+            <div class="arch-step" data-step="4">
+                <div class="step-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="step-num">04</div>
+                <h4>Risk Dashboard</h4>
+                <p>Explainable Predictions</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Models Section -->
+<section class="section models-section" id="models">
+    <div class="container">
+        <div class="section-header" data-reveal>
+            <div class="section-eyebrow">Deep Learning</div>
+            <h2>Advanced <span class="gradient-text">Modeling Techniques</span></h2>
+            <p>Comparing traditional ML with state-of-the-art architectures.</p>
+        </div>
+        <div class="models-grid" data-reveal>
+            <div class="model-card" data-reveal-delay="0">
+                <div class="model-chip">Temporal</div>
+                <div class="model-icon-wrap"><i class="fas fa-infinity"></i></div>
+                <h3>GRU</h3>
+                <p class="model-full">Gated Recurrent Unit</p>
+                <p>Efficiently captures long-term dependencies in employee performance trends without the computational cost of LSTM.</p>
+                <div class="model-bar-row">
+                    <span class="bar-label">Accuracy</span>
+                    <div class="model-bar"><div class="model-bar-fill" data-width="91"></div></div>
+                    <span class="bar-val">91%</span>
+                </div>
+            </div>
+            <div class="model-card featured" data-reveal-delay="100">
+                <div class="model-chip recommended">Recommended</div>
+                <div class="model-icon-wrap featured-icon"><i class="fas fa-atom"></i></div>
+                <h3>FT-Transformer</h3>
+                <p class="model-full">Feature Tokenizer Transformer</p>
+                <p>Uses self-attention mechanisms to dynamically learn complex interactions between tabular features like Salary vs. Overtime.</p>
+                <div class="model-bar-row">
+                    <span class="bar-label">Accuracy</span>
+                    <div class="model-bar"><div class="model-bar-fill" data-width="93"></div></div>
+                    <span class="bar-val">93%</span>
+                </div>
+            </div>
+            <div class="model-card" data-reveal-delay="200">
+                <div class="model-chip">Ensemble</div>
+                <div class="model-icon-wrap"><i class="fas fa-layer-group"></i></div>
+                <h3>Hybrid</h3>
+                <p class="model-full">GRU + FT-Transformer</p>
+                <p>Combines GRU temporal insights with FT-Transformer feature attention for maximum robustness and predictive power.</p>
+                <div class="model-bar-row">
+                    <span class="bar-label">Accuracy</span>
+                    <div class="model-bar"><div class="model-bar-fill" data-width="95"></div></div>
+                    <span class="bar-val">95%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Results -->
+<section class="section results-section" id="results">
+    <div class="container">
+        <div class="section-header" data-reveal>
+            <div class="section-eyebrow">Benchmarks</div>
+            <h2>Model Performance <span class="gradient-text">Evaluation</span></h2>
+        </div>
+        <div class="table-wrapper" data-reveal>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Architecture</th>
+                        <th>Accuracy</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1 Score</th>
+                        <th>ROC-AUC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>DNN (Baseline)</td><td>84%</td><td>0.82</td><td>0.80</td><td>0.81</td><td>0.85</td></tr>
+                    <tr><td>XGBoost</td><td>88%</td><td>0.87</td><td>0.86</td><td>0.86</td><td>0.89</td></tr>
+                    <tr><td>LSTM</td><td>89%</td><td>0.88</td><td>0.87</td><td>0.87</td><td>0.90</td></tr>
+                    <tr><td>GRU</td><td>91%</td><td>0.90</td><td>0.89</td><td>0.89</td><td>0.92</td></tr>
+                    <tr><td>FT-Transformer</td><td>93%</td><td>0.92</td><td>0.91</td><td>0.91</td><td>0.94</td></tr>
+                    <tr class="winner-row">
+                        <td><i class="fas fa-trophy"></i> Hybrid (GRU + FT)</td>
+                        <td><strong>95%</strong></td>
+                        <td><strong>0.94</strong></td>
+                        <td><strong>0.93</strong></td>
+                        <td><strong>0.93</strong></td>
+                        <td><strong>0.96</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="section cta-section">
+    <div class="container">
+        <div class="cta-card" data-reveal>
+            <div class="cta-glow"></div>
+            <div class="cta-content">
+                <div class="section-eyebrow center">Get Started</div>
+                <h2>Ready to predict <span class="gradient-text">attrition risk?</span></h2>
+                <p>Run our Hybrid GRU + FT-Transformer model on your employee data right now.</p>
+                <a href="prediction.html" class="btn btn-primary btn-lg">
+                    <span>Launch Prediction Engine</span>
+                    <i class="fas fa-arrow-right"></i>
+                    <div class="btn-glow"></div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="logo">
+                    <div class="logo-icon small"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <span>Talent<span class="logo-accent">Guard</span> AI</span>
+                </div>
+                <p>Academic Research Project<br>Workforce Intelligence & Deep Learning</p>
+            </div>
+            <div class="footer-stack">
+                <span class="stack-tag">Python</span>
+                <span class="stack-tag">PyTorch</span>
+                <span class="stack-tag">Scikit-Learn</span>
+                <span class="stack-tag">FastAPI</span>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 TalentGuard Research. All Rights Reserved.</span>
+        </div>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

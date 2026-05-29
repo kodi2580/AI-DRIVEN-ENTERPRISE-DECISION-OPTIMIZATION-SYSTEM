@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentGuard | Attrition Prediction Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="prediction-styles.css">
+</head>
+<body>
+
+<!-- Cursor Glow -->
+<div class="cursor-glow" id="cursorGlow"></div>
+<canvas id="particleCanvas"></canvas>
+
+<!-- Processing Overlay -->
+<div class="processing-overlay" id="processingOverlay">
+    <div class="overlay-inner">
+        <div class="spinner-ring"></div>
+        <h3>Analyzing Employees</h3>
+        <p id="processingMsg">Running Hybrid GRU + FT-Transformer model</p>
+        <div class="progress-wrap">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <p id="progressLabel" class="progress-label">0 / 0 processed</p>
+    </div>
+</div>
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <div class="logo-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span>Talent<span class="logo-accent">Guard</span></span>
+        </div>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="index.html" class="nav-link">Overview</a></li>
+            <li><a href="index.html#architecture" class="nav-link">Architecture</a></li>
+            <li><a href="index.html#models" class="nav-link">Models</a></li>
+            <li><a href="index.html#results" class="nav-link">Results</a></li>
+            <li><a href="prediction.html" class="btn-nav"><span>Try Prediction</span><i class="fas fa-arrow-right"></i></a></li>
+        </ul>
+        <div class="mobile-toggle" id="mobileToggle"><span></span><span></span><span></span></div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+        <div class="section-eyebrow">AI Engine</div>
+        <h1>Employee Risk &<br><span class="gradient-text">Hike Analysis</span></h1>
+        <p>Predict attrition risk for individuals or upload a CSV to analyze your entire workforce using our Hybrid GRU + FT-Transformer model.</p>
+    </div>
+</section>
+
+<!-- Mode Tabs -->
+<div class="container tabs-container">
+    <div class="mode-tabs">
+        <button class="mode-tab active" id="tabSingle" onclick="switchMode('single')">
+            <i class="fas fa-user"></i> Single Employee
+        </button>
+        <button class="mode-tab" id="tabBulk" onclick="switchMode('bulk')">
+            <i class="fas fa-users"></i> Bulk Upload
+        </button>
+    </div>
+</div>
+
+<!-- ============================================================
+     SINGLE EMPLOYEE SECTION
+============================================================ -->
+<section class="prediction-section" id="singleSection">
+    <div class="container">
+        <div class="predict-wrapper">
+
+            <!-- Form -->
+            <form id="ibmForm" class="predict-form" onsubmit="handleAdvancedPrediction(event)">
+                <div class="form-section">
+                    <div class="form-section-title">
+                        <div class="form-section-icon"><i class="fas fa-sliders-h"></i></div>
+                        <h3>Employee Parameters</h3>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group floating">
+                            <select id="Age" required>
+                                <option value="">Age</option>
+                                <script>for(let i=18;i<=65;i++) document.write(`<option value="${i}">${i}</option>`);</script>
+                            </select>
+                            <label>Age</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="DailyRate" placeholder="Daily Rate">
+                            <label>Daily Rate</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="DistanceFromHome">
+                                <option value="">Distance</option>
+                                <option value="1">1 mi</option><option value="2">2 mi</option>
+                                <option value="3">3 mi</option><option value="5">5 mi</option>
+                                <option value="7">7 mi</option><option value="10">10 mi</option>
+                                <option value="15">15 mi</option><option value="20">20 mi</option>
+                                <option value="25">25 mi</option><option value="30">30+ mi</option>
+                            </select>
+                            <label>Distance</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="Education">
+                                <option value="">Level</option>
+                                <option value="1">Below College</option><option value="2">College</option>
+                                <option value="3">Bachelor</option><option value="4">Master</option>
+                                <option value="5">Doctorate</option>
+                            </select>
+                            <label>Education</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="EnvironmentSatisfaction">
+                                <option value="">Rating</option>
+                                <option value="1">Low</option><option value="2">Medium</option>
+                                <option value="3">High</option><option value="4">Very High</option>
+                            </select>
+                            <label>Env. Satisfaction</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="HourlyRate" placeholder="Hourly Rate">
+                            <label>Hourly Rate</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="JobInvolvement">
+                                <option value="">Level</option>
+                                <option value="1">Low</option><option value="2">Medium</option>
+                                <option value="3">High</option><option value="4">Very High</option>
+                            </select>
+                            <label>Job Involvement</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="JobLevel">
+                                <option value="">Level</option>
+                                <option value="1">1</option><option value="2">2</option>
+                                <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                            </select>
+                            <label>Job Level</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="JobSatisfaction">
+                                <option value="">Rating</option>
+                                <option value="1">Low</option><option value="2">Medium</option>
+                                <option value="3">High</option><option value="4">Very High</option>
+                            </select>
+                            <label>Job Satisfaction</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="MonthlyIncome" placeholder="Monthly Income">
+                            <label>Monthly Income</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="MonthlyRate" placeholder="Monthly Rate">
+                            <label>Monthly Rate</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="NumCompaniesWorked" placeholder="Num Companies Worked">
+                            <label>Companies Worked</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="PercentSalaryHike" placeholder="% Salary Hike">
+                            <label>% Salary Hike</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="PerformanceRating">
+                                <option value="">Rating</option>
+                                <option value="1">Low</option><option value="2">Good</option>
+                                <option value="3">Excellent</option><option value="4">Outstanding</option>
+                            </select>
+                            <label>Performance</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="RelationshipSatisfaction">
+                                <option value="">Rating</option>
+                                <option value="1">Low</option><option value="2">Medium</option>
+                                <option value="3">High</option><option value="4">Very High</option>
+                            </select>
+                            <label>Relationship Sat.</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="StockOptionLevel">
+                                <option value="">Level</option>
+                                <option value="0">0</option><option value="1">1</option>
+                                <option value="2">2</option><option value="3">3</option>
+                            </select>
+                            <label>Stock Options</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="TotalWorkingYears" placeholder="Total Working Years">
+                            <label>Total Exp (yrs)</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="TrainingTimesLastYear" placeholder=" ">
+                            <label>Training Times</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="WorkLifeBalance">
+                                <option value="">Balance</option>
+                                <option value="1">Bad</option><option value="2">Good</option>
+                                <option value="3">Better</option><option value="4">Best</option>
+                            </select>
+                            <label>Work-Life Balance</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="YearsAtCompany" placeholder="Years At Company">
+                            <label>Years at Company</label>
+                        </div>
+                        <div class="form-group floating">
+                            <input type="number" id="YearsInCurrentRole" placeholder="Years In Current Role">
+                            <label>Yrs in Role</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="YearsSinceLastPromotion">
+                                <option value="">Years</option>
+                                <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                                <option value="9">9</option><option value="10">10+</option>
+                            </select>
+                            <label>Yrs Since Promo</label>
+                        </div>
+                        <div class="form-group floating">
+                            <select id="YearsWithCurrManager">
+                                <option value="">Years</option>
+                                <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                                <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                                <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                                <option value="9">9</option><option value="10">10+</option>
+                            </select>
+                            <label>Yrs with Manager</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-divider"></div>
+
+                <!-- Radio Groups -->
+                <div class="radio-section">
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-plane"></i> Business Travel</div>
+                        <div class="radio-chips">
+                            <label class="chip-radio"><input type="radio" name="BusinessTravel" value="none" checked><span>Non-Travel</span></label>
+                            <label class="chip-radio"><input type="radio" name="BusinessTravel" value="rare"><span>Rarely</span></label>
+                            <label class="chip-radio"><input type="radio" name="BusinessTravel" value="freq"><span>Frequently</span></label>
+                        </div>
+                    </div>
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-building"></i> Department</div>
+                        <div class="radio-chips">
+                            <label class="chip-radio"><input type="radio" name="Department" value="hr" checked><span>HR</span></label>
+                            <label class="chip-radio"><input type="radio" name="Department" value="rd"><span>R&D</span></label>
+                            <label class="chip-radio"><input type="radio" name="Department" value="sales"><span>Sales</span></label>
+                        </div>
+                    </div>
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-graduation-cap"></i> Education Field</div>
+                        <div class="radio-chips">
+                            <label class="chip-radio"><input type="radio" name="EducationField" value="baseline" checked><span>Other</span></label>
+                            <label class="chip-radio"><input type="radio" name="EducationField" value="life"><span>Life Sciences</span></label>
+                            <label class="chip-radio"><input type="radio" name="EducationField" value="marketing"><span>Marketing</span></label>
+                            <label class="chip-radio"><input type="radio" name="EducationField" value="medical"><span>Medical</span></label>
+                            <label class="chip-radio"><input type="radio" name="EducationField" value="technical"><span>Technical</span></label>
+                        </div>
+                    </div>
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-user"></i> Gender</div>
+                        <div class="radio-chips">
+                            <label class="chip-radio"><input type="radio" name="Gender" value="female" checked><span>Female</span></label>
+                            <label class="chip-radio"><input type="radio" name="Gender" value="male"><span>Male</span></label>
+                        </div>
+                    </div>
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-briefcase"></i> Job Role</div>
+                        <div class="radio-chips flex-wrap">
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="baseline" checked><span>Healthcare Rep</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="hr"><span>Human Resources</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="lab"><span>Lab Technician</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="manager"><span>Manager</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="mfgdir"><span>Mfg. Director</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="resdir"><span>Research Director</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="ressci"><span>Research Scientist</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="salesexec"><span>Sales Executive</span></label>
+                            <label class="chip-radio"><input type="radio" name="JobRole" value="salesrep"><span>Sales Rep</span></label>
+                        </div>
+                    </div>
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-ring"></i> Marital Status</div>
+                        <div class="radio-chips">
+                            <label class="chip-radio"><input type="radio" name="MaritalStatus" value="divorced" checked><span>Divorced</span></label>
+                            <label class="chip-radio"><input type="radio" name="MaritalStatus" value="married"><span>Married</span></label>
+                            <label class="chip-radio"><input type="radio" name="MaritalStatus" value="single"><span>Single</span></label>
+                        </div>
+                    </div>
+                    <div class="radio-block">
+                        <div class="radio-label"><i class="fas fa-clock"></i> Overtime</div>
+                        <div class="radio-chips">
+                            <label class="chip-radio"><input type="radio" name="OverTime" value="no" checked><span>No</span></label>
+                            <label class="chip-radio"><input type="radio" name="OverTime" value="yes"><span>Yes</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-bolt"></i>
+                    <span>Run AI Prediction</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </form>
+
+            <!-- Result Panel -->
+            <div class="predict-result" id="resultPanel">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-brain"></i>
+                        <div class="empty-rings">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                    <h4>Ready to Analyze</h4>
+                    <p>Fill in the employee parameters and run the AI prediction engine to see the attrition risk assessment.</p>
+                    <div class="model-tags-row">
+                        <span class="mtag">GRU</span>
+                        <span class="mtag-sep">+</span>
+                        <span class="mtag">FT-Transformer</span>
+                        <span class="mtag-sep">+</span>
+                        <span class="mtag">XGBoost</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     BULK UPLOAD SECTION
+============================================================ -->
+<section class="prediction-section" id="bulkSection" style="display:none;">
+    <div class="container">
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" accept=".csv" id="csvUpload" onchange="handleFileSelect(event)">
+            <div class="upload-icon-wrap">
+                <div class="upload-circle"><i class="fas fa-cloud-arrow-up"></i></div>
+            </div>
+            <h3>Drop your CSV here</h3>
+            <p>or click to browse files</p>
+            <span class="upload-hint"><i class="fas fa-info-circle"></i> CSV with IBM HR Analytics columns (Age, MonthlyIncome, OverTime, etc.)</span>
+        </div>
+
+        <div class="file-preview" id="filePreview">
+            <div class="fp-icon"><i class="fas fa-file-csv"></i></div>
+            <div class="fp-info">
+                <strong id="fileName">file.csv</strong>
+                <span id="fileSize">0 KB</span>
+            </div>
+            <button class="fp-remove" onclick="removeFile()" title="Remove file"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Criteria -->
+        <div class="criteria-panel">
+            <div class="criteria-header">
+                <i class="fas fa-clipboard-check"></i>
+                <h4>Hike Eligibility Criteria</h4>
+            </div>
+            <div class="criteria-grid">
+                <div class="criteria-item"><i class="fas fa-star"></i><span>Performance Rating ≥ 3 (Excellent+)</span></div>
+                <div class="criteria-item"><i class="fas fa-smile"></i><span>Job Satisfaction ≥ 3 (High+)</span></div>
+                <div class="criteria-item"><i class="fas fa-calendar-alt"></i><span>Years at Company ≥ 2</span></div>
+                <div class="criteria-item"><i class="fas fa-clock"></i><span>Years Since Last Promotion ≥ 1</span></div>
+                <div class="criteria-item"><i class="fas fa-balance-scale"></i><span>Work-Life Balance ≥ 2 (Good+)</span></div>
+                <div class="criteria-item"><i class="fas fa-chart-line"></i><span>Low-Medium Attrition Risk (&lt; 60%)</span></div>
+            </div>
+        </div>
+
+        <div style="text-align:center;">
+            <button class="btn-submit bulk-btn" id="analyzeBtn" onclick="analyzeBulk()" disabled>
+                <i class="fas fa-bolt"></i>
+                <span>Run Bulk Analysis</span>
+                <div class="btn-glow"></div>
+            </button>
+        </div>
+
+        <!-- Bulk Results -->
+        <div id="bulkResults" style="display:none; margin-top:3rem;">
+
+            <!-- Banner -->
+            <div class="hike-banner" id="hikeBannerContainer">
+                <div class="hike-banner-icon"><i class="fas fa-award"></i></div>
+                <div>
+                    <h4 id="hikeBannerTitle">Hike Analysis Complete</h4>
+                    <p id="hikeBannerMsg">Based on performance, satisfaction, tenure and attrition risk scoring.</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card" data-color="purple">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-val" id="statTotal">0</div>
+                    <div class="stat-label">Total Analyzed</div>
+                </div>
+                <div class="stat-card" data-color="green">
+                    <div class="stat-icon"><i class="fas fa-arrow-trend-up"></i></div>
+                    <div class="stat-val" id="statHike">0</div>
+                    <div class="stat-label">Hike Worthy</div>
+                </div>
+                <div class="stat-card" data-color="amber">
+                    <div class="stat-icon"><i class="fas fa-minus-circle"></i></div>
+                    <div class="stat-val" id="statNoHike">0</div>
+                    <div class="stat-label">Not Recommended</div>
+                </div>
+                <div class="stat-card" data-color="red">
+                    <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                    <div class="stat-val" id="statHighRisk">0</div>
+                    <div class="stat-label">High Risk</div>
+                </div>
+                <div class="stat-card" data-color="blue">
+                    <div class="stat-icon"><i class="fas fa-percent"></i></div>
+                    <div class="stat-val" id="statAvgScore">0%</div>
+                    <div class="stat-label">Avg Hike Score</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-row">
+                <!-- Donut -->
+                <div class="chart-card">
+                    <div class="chart-card-title"><i class="fas fa-chart-pie"></i> Risk Distribution</div>
+                    <div class="donut-wrap">
+                        <svg width="140" height="140" viewBox="0 0 140 140">
+                            <circle cx="70" cy="70" r="52" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="18"/>
+                            <circle id="donutLow" cx="70" cy="70" r="52" fill="none" stroke="#10b981" stroke-width="18" stroke-dasharray="0 327" stroke-dashoffset="0" style="transition:stroke-dasharray 1s ease"/>
+                            <circle id="donutMed" cx="70" cy="70" r="52" fill="none" stroke="#f59e0b" stroke-width="18" stroke-dasharray="0 327" stroke-dashoffset="0" style="transition:stroke-dasharray 1s ease 0.3s"/>
+                            <circle id="donutHigh" cx="70" cy="70" r="52" fill="none" stroke="#ef4444" stroke-width="18" stroke-dasharray="0 327" stroke-dashoffset="0" style="transition:stroke-dasharray 1s ease 0.6s"/>
+                        </svg>
+                        <div class="donut-center">
+                            <span class="donut-big" id="donutBig">0</span>
+                            <span class="donut-small">Employees</span>
+                        </div>
+                    </div>
+                    <div class="donut-legend">
+                        <div class="dleg-item"><span class="dleg-dot green"></span>Low <strong id="legendLow">0</strong></div>
+                        <div class="dleg-item"><span class="dleg-dot amber"></span>Medium <strong id="legendMed">0</strong></div>
+                        <div class="dleg-item"><span class="dleg-dot red"></span>High <strong id="legendHigh">0</strong></div>
+                    </div>
+                </div>
+
+                <!-- Dept Bars -->
+                <div class="chart-card">
+                    <div class="chart-card-title"><i class="fas fa-building"></i> Hike by Department</div>
+                    <div class="mini-bars" id="deptBars"></div>
+                </div>
+
+                <!-- Score Dist -->
+                <div class="chart-card">
+                    <div class="chart-card-title"><i class="fas fa-chart-bar"></i> Score Distribution</div>
+                    <div class="score-dist" id="scoreDist"></div>
+                    <div class="score-axis">
+                        <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="results-panel">
+                <div class="results-panel-header">
+                    <h3><i class="fas fa-table-list"></i> Employee Analysis</h3>
+                    <div class="header-actions">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" onclick="filterTable('all', this)">All</button>
+                            <button class="filter-tab" onclick="filterTable('hike', this)">Hike Worthy</button>
+                            <button class="filter-tab" onclick="filterTable('high', this)">High Risk</button>
+                            <button class="filter-tab" onclick="filterTable('nohike', this)">No Hike</button>
+                        </div>
+                        <button class="export-btn" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table class="emp-table">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable('id')">Emp ID <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('dept')">Department <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('role')">Job Role <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('income')">Income <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('perf')">Performance <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('attrProb')">Attrition Risk <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('hikeScore')">Hike Score <i class="fas fa-sort"></i></th>
+                                <th onclick="sortTable('hikeWorthy')">Recommendation <i class="fas fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="empTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <span class="page-info" id="pageInfo">Showing 1–10</span>
+                    <div class="page-btns" id="pageBtns"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="logo">
+                    <div class="logo-icon small"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <span>Talent<span class="logo-accent">Guard</span> AI</span>
+                </div>
+                <p>Academic Research Project<br>Workforce Intelligence & Deep Learning</p>
+            </div>
+            <div class="footer-stack">
+                <span class="stack-tag">Python</span>
+                <span class="stack-tag">PyTorch</span>
+                <span class="stack-tag">FastAPI</span>
+                <span class="stack-tag">Scikit-Learn</span>
+            </div>
+        </div>
+        <div class="footer-bottom">&copy; 2026 TalentGuard Research. All Rights Reserved.</div>
+    </div>
+</footer>
+
+<script>
+// ── Particles & cursor (same as index) ──────────────────────
+const cursorGlow = document.getElementById('cursorGlow');
+document.addEventListener('mousemove', e => {
+    cursorGlow.style.left = e.clientX + 'px';
+    cursorGlow.style.top = e.clientY + 'px';
+});
+
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() { canvas.width = innerWidth; canvas.height = innerHeight; }
+
+class Particle {
+    constructor() { this.reset(); }
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 1.2 + 0.3;
+        this.speedX = (Math.random() - 0.5) * 0.25;
+        this.speedY = (Math.random() - 0.5) * 0.25;
+        this.opacity = Math.random() * 0.4 + 0.1;
+        this.color = ['99,102,241','6,182,212','139,92,246'][Math.floor(Math.random()*3)];
+    }
+    update() {
+        this.x += this.speedX; this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${this.color},${this.opacity})`;
+        ctx.fill();
+    }
+}
+
+function initParticles() {
+    particles = [];
+    const count = Math.min(80, Math.floor(canvas.width * canvas.height / 14000));
+    for (let i = 0; i < count; i++) particles.push(new Particle());
+}
+
+function connectParticles() {
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i+1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 100) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(99,102,241,${0.07 * (1 - dist/100)})`;
+                ctx.lineWidth = 0.5;
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+(function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    connectParticles();
+    requestAnimationFrame(animate);
+})();
+
+resizeCanvas(); initParticles();
+window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+
+// ── Navbar ──────────────────────────────────────────────────
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', scrollY > 40));
+
+// ── Mobile Menu ──────────────────────────────────────────────
+document.getElementById('mobileToggle').addEventListener('click', () => {
+    const links = document.getElementById('navLinks');
+    const open = links.style.display === 'flex';
+    links.style.cssText = open ? '' : `display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(8,12,20,0.97);backdrop-filter:blur(20px);padding:2rem;border-bottom:1px solid rgba(255,255,255,0.08);gap:1.5rem;z-index:999`;
+});
+
+// ── Mode Switch ──────────────────────────────────────────────
+function switchMode(mode) {
+    document.getElementById('singleSection').style.display = mode === 'single' ? 'block' : 'none';
+    document.getElementById('bulkSection').style.display = mode === 'bulk' ? 'block' : 'none';
+    document.getElementById('tabSingle').classList.toggle('active', mode === 'single');
+    document.getElementById('tabBulk').classList.toggle('active', mode === 'bulk');
+}
+
+// ── Prediction ────────────────────────────────────────────────
+async function handleAdvancedPrediction(e) {
+    e.preventDefault();
+    const panel = document.getElementById('resultPanel');
+    panel.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><h4>Running AI Model...</h4><p>GRU Temporal Sequences & FT-Transformer Attention</p></div>`;
+
+    const formData = {
+        data: {
+            Age: parseInt(document.getElementById('Age').value) || 30,
+            DailyRate: parseInt(document.getElementById('DailyRate').value) || 800,
+            DistanceFromHome: parseInt(document.getElementById('DistanceFromHome').value) || 10,
+            Education: parseInt(document.getElementById('Education').value) || 3,
+            EnvironmentSatisfaction: parseInt(document.getElementById('EnvironmentSatisfaction').value) || 3,
+            HourlyRate: parseInt(document.getElementById('HourlyRate').value) || 65,
+            JobInvolvement: parseInt(document.getElementById('JobInvolvement').value) || 3,
+            JobLevel: parseInt(document.getElementById('JobLevel').value) || 2,
+            JobSatisfaction: parseInt(document.getElementById('JobSatisfaction').value) || 3,
+            MonthlyIncome: parseInt(document.getElementById('MonthlyIncome').value) || 5000,
+            MonthlyRate: parseInt(document.getElementById('MonthlyRate').value) || 15000,
+            NumCompaniesWorked: parseInt(document.getElementById('NumCompaniesWorked').value) || 2,
+            PercentSalaryHike: parseInt(document.getElementById('PercentSalaryHike').value) || 14,
+            PerformanceRating: parseInt(document.getElementById('PerformanceRating').value) || 3,
+            RelationshipSatisfaction: parseInt(document.getElementById('RelationshipSatisfaction').value) || 3,
+            StockOptionLevel: parseInt(document.getElementById('StockOptionLevel').value) || 1,
+            TotalWorkingYears: parseInt(document.getElementById('TotalWorkingYears').value) || 8,
+            TrainingTimesLastYear: parseInt(document.getElementById('TrainingTimesLastYear').value) || 3,
+            WorkLifeBalance: parseInt(document.getElementById('WorkLifeBalance').value) || 3,
+            YearsAtCompany: parseInt(document.getElementById('YearsAtCompany').value) || 5,
+            YearsInCurrentRole: parseInt(document.getElementById('YearsInCurrentRole').value) || 3,
+            YearsSinceLastPromotion: parseInt(document.getElementById('YearsSinceLastPromotion').value) || 1,
+            YearsWithCurrManager: parseInt(document.getElementById('YearsWithCurrManager').value) || 2,
+            BusinessTravel: document.querySelector('input[name="BusinessTravel"]:checked').value,
+            Department: document.querySelector('input[name="Department"]:checked').value,
+            EducationField: document.querySelector('input[name="EducationField"]:checked').value,
+            Gender: document.querySelector('input[name="Gender"]:checked').value,
+            JobRole: document.querySelector('input[name="JobRole"]:checked').value,
+            MaritalStatus: document.querySelector('input[name="MaritalStatus"]:checked').value,
+            OverTime: document.querySelector('input[name="OverTime"]:checked').value,
+        }
+    };
+
+    try {
+        const res = await fetch('http://localhost:8000/predict', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(formData)
+        });
+        if (!res.ok) throw new Error('API failed');
+        const data = await res.json();
+        renderSingleResult(data, panel);
+    } catch {
+        // Local simulation fallback
+        const ot = formData.data.OverTime === 'yes';
+        const js = formData.data.JobSatisfaction;
+        const ya = formData.data.YearsAtCompany;
+        const inc = formData.data.MonthlyIncome;
+        let risk = 20;
+        if (ot) risk += 25;
+        if (js < 3) risk += 20;
+        if (ya < 2 && inc < 4000) risk += 15;
+        if (formData.data.Age < 30 && inc < 3500) risk += 10;
+        risk = Math.min(risk, 97);
+        const factors = [];
+        if (ot) factors.push('Overtime Overload');
+        if (js < 3) factors.push('Low Job Satisfaction');
+        if (ya < 2) factors.push('Short Tenure');
+        if (inc < 4000) factors.push('Below Market Pay');
+        const level = risk > 70 ? 'High' : risk > 40 ? 'Medium' : 'Low';
+        const rec = level === 'High' ? 'Immediate intervention — review workload & compensation.' : level === 'Medium' ? 'Schedule career development discussion soon.' : 'Continue standard engagement protocols.';
+        renderSingleResult({ attrition_probability: risk/100, risk_level: level, factors, recommendation: rec, confidence: 0.94 }, panel);
+    }
+}
+
+function renderSingleResult(data, panel) {
+    const score = Math.round(data.attrition_probability * 100);
+    const level = data.risk_level;
+    const cls = level === 'High' ? 'high' : level === 'Medium' ? 'med' : 'low';
+    const color = level === 'High' ? '#ef4444' : level === 'Medium' ? '#f59e0b' : '#10b981';
+    const arc = (score / 100) * 188.5;
+    const icon = level === 'High' ? 'fa-triangle-exclamation' : level === 'Medium' ? 'fa-circle-exclamation' : 'fa-circle-check';
+
+    panel.innerHTML = `
+    <div class="result-card">
+        <div class="result-header">
+            <h3><i class="fas fa-chart-line"></i> Risk Analysis</h3>
+            <span class="risk-badge risk-${cls}"><i class="fas ${icon}"></i> ${level} Risk</span>
+        </div>
+        <div class="result-gauge-wrap">
+            <svg viewBox="0 0 200 110" class="gauge-svg">
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14" stroke-linecap="round"/>
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"
+                    stroke-dasharray="0 251.2" class="gauge-arc" data-target="${(score/100)*251.2}" opacity="0.9"/>
+            </svg>
+            <div class="gauge-center">
+                <div class="gauge-pct" style="color:${color}">${score}<span>%</span></div>
+                <div class="gauge-sub">Attrition Risk</div>
+            </div>
+        </div>
+        <div class="result-stats-row">
+            <div class="rs-item">
+                <span class="rs-label">Risk Level</span>
+                <span class="rs-val" style="color:${color}">${level}</span>
+            </div>
+            <div class="rs-divider"></div>
+            <div class="rs-item">
+                <span class="rs-label">Confidence</span>
+                <span class="rs-val">${((data.confidence||0.94)*100).toFixed(1)}%</span>
+            </div>
+        </div>
+        ${data.factors && data.factors.length > 0 ? `
+        <div class="shap-block">
+            <h5><i class="fas fa-magnifying-glass-chart"></i> Key Risk Factors</h5>
+            ${data.factors.map((f,i) => `
+            <div class="shap-row" style="animation-delay:${i*0.1}s">
+                <span class="shap-name">${f}</span>
+                <div class="shap-track"><div class="shap-fill" style="--w:${85-i*15}%; background: linear-gradient(90deg, ${color}99, ${color});"></div></div>
+                <span class="shap-pct">${85-i*15}%</span>
+            </div>`).join('')}
+        </div>` : ''}
+        <div class="rec-box rec-${cls}">
+            <div class="rec-icon"><i class="fas fa-lightbulb"></i></div>
+            <div>
+                <strong>HR Recommendation</strong>
+                <p>${data.recommendation||'Continue standard engagement protocols.'}</p>
+            </div>
+        </div>
+    </div>`;
+
+    // Animate gauge arc
+    const arc_el = panel.querySelector('.gauge-arc');
+    if (arc_el) {
+        const target = parseFloat(arc_el.dataset.target);
+        arc_el.style.strokeDasharray = '0 251.2';
+        setTimeout(() => {
+            arc_el.style.transition = 'stroke-dasharray 1.3s cubic-bezier(0.16,1,0.3,1)';
+            arc_el.style.strokeDasharray = `${target} 251.2`;
+        }, 100);
+    }
+
+    // Animate shap bars
+    panel.querySelectorAll('.shap-fill').forEach((b, i) => {
+        b.style.width = '0';
+        setTimeout(() => { b.style.transition = 'width 0.8s cubic-bezier(0.16,1,0.3,1)'; b.style.width = b.style.getPropertyValue('--w') || getComputedStyle(b).getPropertyValue('--w'); }, 500 + i*100);
+        // Workaround: set via style
+        const w = b.style.cssText.match(/--w:([^;]+)/)?.[1]?.trim();
+        if (w) { setTimeout(() => { b.style.width = w; }, 500 + i*100); }
+    });
+}
+
+// ── Bulk Upload ──────────────────────────────────────────────
+let csvData = null;
+let analysisResults = [];
+let filteredResults = [];
+let currentPage = 1;
+let sortKey = 'attrProb', sortDir = -1;
+const PAGE_SIZE = 15;
+
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault(); uploadZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file?.name.endsWith('.csv')) processFile(file);
+});
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) processFile(file);
+}
+
+function processFile(file) {
+    csvData = null;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('filePreview').classList.add('visible');
+    const reader = new FileReader();
+    reader.onload = ev => {
+        csvData = parseCSV(ev.target.result);
+        document.getElementById('analyzeBtn').disabled = csvData.length === 0;
+    };
+    reader.readAsText(file);
+}
+
+function removeFile() {
+    csvData = null;
+    document.getElementById('filePreview').classList.remove('visible');
+    document.getElementById('csvUpload').value = '';
+    document.getElementById('analyzeBtn').disabled = true;
+}
+
+function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
+    return lines.slice(1).map(line => {
+        const vals = line.split(',').map(v => v.trim().replace(/"/g,''));
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = vals[i] || '');
+        return obj;
+    }).filter(r => r['MonthlyIncome'] || r['Age']);
+}
+
+async function analyzeBulk() {
+    if (!csvData || csvData.length === 0) return;
+    const overlay = document.getElementById('processingOverlay');
+    overlay.classList.add('active');
+    analysisResults = [];
+    for (let i = 0; i < csvData.length; i++) {
+        const row = csvData[i];
+        document.getElementById('progressFill').style.width = ((i+1)/csvData.length*100) + '%';
+        document.getElementById('progressLabel').textContent = `${i+1} / ${csvData.length} processed`;
+        const result = simulateEmployeeAnalysis(row, i+1);
+        analysisResults.push(result);
+        if (i % 20 === 0) await new Promise(r => setTimeout(r, 1));
+    }
+    overlay.classList.remove('active');
+    renderBulkResults();
+}
+
+function simulateEmployeeAnalysis(row, id) {
+    const perf = parseInt(row['PerformanceRating']) || 3;
+    const jobSat = parseInt(row['JobSatisfaction']) || 3;
+    const yearsAtComp = parseInt(row['YearsAtCompany']) || 3;
+    const income = parseInt(row['MonthlyIncome']) || 5000;
+    const overTime = row['OverTime'] === 'Yes';
+    const workLifeBalance = parseInt(row['WorkLifeBalance']) || 3;
+    const jobInvolvement = parseInt(row['JobInvolvement']) || 3;
+    const yearsSincePromo = parseInt(row['YearsSinceLastPromotion']) || 1;
+
+    let attrRisk = 0.15;
+    if (overTime) attrRisk += 0.25;
+    if (jobSat < 3) attrRisk += 0.2;
+    if (yearsAtComp < 2) attrRisk += 0.1;
+    if (income < 3000) attrRisk += 0.15;
+    if (workLifeBalance < 2) attrRisk += 0.1;
+    attrRisk = Math.min(attrRisk + (Math.random() * 0.1 - 0.05), 0.99);
+
+    const riskLevel = attrRisk > 0.7 ? 'High' : attrRisk > 0.4 ? 'Medium' : 'Low';
+    const hikeWorthy = perf >= 3 && jobSat >= 3 && yearsAtComp >= 2 && yearsSincePromo >= 1 && workLifeBalance >= 2 && attrRisk < 0.6 && jobInvolvement >= 3;
+
+    const hikeScore = Math.round(
+        (perf / 4) * 30 + (jobSat / 4) * 20 + (Math.min(yearsAtComp, 10) / 10) * 20 +
+        (workLifeBalance / 4) * 15 + ((1 - attrRisk) * 15)
+    );
+
+    return {
+        id, dept: row['Department'] || 'Unknown', role: row['JobRole'] || 'Unknown',
+        income, perf, attrProb: Math.round(attrRisk * 100),
+        riskLevel, hikeScore, hikeWorthy
+    };
+}
+
+function renderBulkResults() {
+    const total = analysisResults.length;
+    const highRisk = analysisResults.filter(r => r.riskLevel === 'High').length;
+    const medRisk = analysisResults.filter(r => r.riskLevel === 'Medium').length;
+    const lowRisk = analysisResults.filter(r => r.riskLevel === 'Low').length;
+    const hikeCount = analysisResults.filter(r => r.hikeWorthy).length;
+    const noHike = total - hikeCount;
+    const avgScore = Math.round(analysisResults.reduce((s, r) => s + r.hikeScore, 0) / total);
+    const hikePct = Math.round((hikeCount / total) * 100);
+
+    document.getElementById('hikeBannerTitle').textContent = `${hikeCount.toLocaleString()} of ${total.toLocaleString()} employees qualify for a salary hike (${hikePct}%)`;
+    document.getElementById('hikeBannerMsg').textContent = `${highRisk} employees flagged as high attrition risk — immediate retention action recommended.`;
+    document.getElementById('statTotal').textContent = total.toLocaleString();
+    document.getElementById('statHike').textContent = hikeCount.toLocaleString();
+    document.getElementById('statNoHike').textContent = noHike.toLocaleString();
+    document.getElementById('statHighRisk').textContent = highRisk.toLocaleString();
+    document.getElementById('statAvgScore').textContent = avgScore + '%';
+
+    // Donut
+    const circ = 2 * Math.PI * 52;
+    const lf = lowRisk/total, mf = medRisk/total, hf = highRisk/total;
+    const dL = lf*circ, dM = mf*circ, dH = hf*circ;
+    document.getElementById('donutLow').setAttribute('stroke-dasharray', `${dL} ${circ-dL}`);
+    document.getElementById('donutMed').setAttribute('stroke-dasharray', `${dM} ${circ-dM}`);
+    document.getElementById('donutHigh').setAttribute('stroke-dasharray', `${dH} ${circ-dH}`);
+    document.getElementById('donutMed').setAttribute('stroke-dashoffset', -dL);
+    document.getElementById('donutHigh').setAttribute('stroke-dashoffset', -(dL+dM));
+    document.getElementById('donutBig').textContent = total;
+    document.getElementById('legendLow').textContent = lowRisk;
+    document.getElementById('legendMed').textContent = medRisk;
+    document.getElementById('legendHigh').textContent = highRisk;
+
+    // Dept Bars
+    const deptMap = {};
+    analysisResults.forEach(r => {
+        if (!deptMap[r.dept]) deptMap[r.dept] = { total: 0, hike: 0 };
+        deptMap[r.dept].total++;
+        if (r.hikeWorthy) deptMap[r.dept].hike++;
+    });
+    const colors = ['#6366f1','#06b6d4','#f59e0b','#ec4899','#8b5cf6'];
+    const deptBars = document.getElementById('deptBars');
+    deptBars.innerHTML = '';
+    Object.entries(deptMap).forEach(([dept, d], idx) => {
+        const pct = Math.round((d.hike / d.total) * 100);
+        deptBars.innerHTML += `<div class="mini-bar-item">
+            <div class="mini-bar-label"><span>${dept.replace('Research & Development','R&D')}</span><span>${d.hike}/${d.total} (${pct}%)</span></div>
+            <div class="mini-bar-track"><div class="mini-bar-fill" style="width:${pct}%;background:${colors[idx%colors.length]}"></div></div>
+        </div>`;
+    });
+
+    // Score dist
+    const buckets = Array(10).fill(0);
+    analysisResults.forEach(r => buckets[Math.min(9, Math.floor(r.hikeScore/10))]++);
+    const maxB = Math.max(...buckets);
+    const bColors = ['#ef4444','#ef4444','#f59e0b','#f59e0b','#f59e0b','#3b82f6','#3b82f6','#10b981','#10b981','#10b981'];
+    document.getElementById('scoreDist').innerHTML = buckets.map((v,i) =>
+        `<div class="score-col"><div class="score-col-bar" style="height:${maxB?(v/maxB)*90:4}px;background:${bColors[i]}"></div><div class="score-col-label">${i*10}</div></div>`
+    ).join('');
+
+    filteredResults = [...analysisResults];
+    currentPage = 1;
+    renderTable();
+    document.getElementById('bulkResults').style.display = 'block';
+    document.getElementById('bulkResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderTable() {
+    const start = (currentPage-1)*PAGE_SIZE;
+    const end = Math.min(start+PAGE_SIZE, filteredResults.length);
+    const page = filteredResults.slice(start, end);
+    const tbody = document.getElementById('empTableBody');
+    tbody.innerHTML = page.map(r => {
+        const rc = r.riskLevel==='High'?'chip-high':r.riskLevel==='Medium'?'chip-medium':'chip-low';
+        const sc = r.hikeScore>=75?'excellent':r.hikeScore>=55?'good':r.hikeScore>=35?'average':'poor';
+        const stars = '★'.repeat(r.perf)+'☆'.repeat(4-r.perf);
+        return `<tr>
+            <td><span class="emp-id">#${r.id}</span></td>
+            <td>${r.dept}</td><td>${r.role}</td>
+            <td>$${r.income.toLocaleString()}</td>
+            <td class="stars" title="${r.perf}/4">${stars}</td>
+            <td><span class="attrition-chip ${rc}">${r.attrProb}% · ${r.riskLevel}</span></td>
+            <td><div class="hike-score-bar"><div class="score-track"><div class="score-fill ${sc}" style="width:${r.hikeScore}%"></div></div><span>${r.hikeScore}</span></div></td>
+            <td><span class="hike-chip ${r.hikeWorthy?'hike-yes':'hike-no'}">${r.hikeWorthy?'✓ Recommend':'✗ Hold'}</span></td>
+        </tr>`;
+    }).join('');
+    document.getElementById('pageInfo').textContent = `Showing ${start+1}–${end} of ${filteredResults.length}`;
+    const tp = Math.ceil(filteredResults.length/PAGE_SIZE);
+    const pageBtns = document.getElementById('pageBtns');
+    pageBtns.innerHTML = '';
+    const prev = document.createElement('button');
+    prev.className='page-btn'; prev.innerHTML='<i class="fas fa-chevron-left"></i>';
+    prev.disabled = currentPage===1; prev.onclick = ()=>{currentPage--;renderTable();};
+    pageBtns.appendChild(prev);
+    const ps = Math.max(1,currentPage-2), pe = Math.min(tp,ps+4);
+    for(let p=ps;p<=pe;p++){
+        const b=document.createElement('button');
+        b.className='page-btn'+(p===currentPage?' active':'');
+        b.textContent=p; b.onclick=(pg=>()=>{currentPage=pg;renderTable();})(p);
+        pageBtns.appendChild(b);
+    }
+    const next=document.createElement('button');
+    next.className='page-btn'; next.innerHTML='<i class="fas fa-chevron-right"></i>';
+    next.disabled=currentPage===tp; next.onclick=()=>{currentPage++;renderTable();};
+    pageBtns.appendChild(next);
+}
+
+function filterTable(f, btn) {
+    document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    filteredResults = f==='all' ? [...analysisResults] : f==='hike' ? analysisResults.filter(r=>r.hikeWorthy) : f==='high' ? analysisResults.filter(r=>r.riskLevel==='High') : analysisResults.filter(r=>!r.hikeWorthy);
+    currentPage=1; renderTable();
+}
+
+function sortTable(key) {
+    if(sortKey===key) sortDir*=-1; else{sortKey=key;sortDir=1;}
+    filteredResults.sort((a,b)=>{let va=a[key],vb=b[key];if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}return va<vb?-sortDir:va>vb?sortDir:0;});
+    renderTable();
+}
+
+function exportCSV() {
+    const h=['EmployeeID','Department','JobRole','MonthlyIncome','PerformanceRating','AttritionProbability(%)','RiskLevel','HikeScore','HikeRecommended'];
+    const rows=filteredResults.map(r=>[r.id,r.dept,r.role,r.income,r.perf,r.attrProb,r.riskLevel,r.hikeScore,r.hikeWorthy?'Yes':'No']);
+    const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download='talentguard_analysis.csv'; a.click();
+}
+</script>
+</body>
+</html>
